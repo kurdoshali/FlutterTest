@@ -97,44 +97,69 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('WELCOME', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 40),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Enter your Email'),
+      body: Stack(
+        children: [
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('WELCOME', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 40),
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Enter your Email'),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Enter your Password'),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: _checkFields() ? _login : null,
+                    child: const Text('Login'),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _checkFields() ? _register : null,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[600]),
+                    child: const Text('Register'),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_isLoading) const CircularProgressIndicator(),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 10),
+                    Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                  ],
+                ],
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Enter your Password'),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _checkFields() ? _login : null,
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _checkFields() ? _register : null,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[600]),
-                child: const Text('Register'),
-              ),
-              const SizedBox(height: 20),
-              if (_isLoading) const CircularProgressIndicator(),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 10),
-                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-              ],
-            ],
+            ),
           ),
-        ),
+
+          // if (_isLoading)
+          //   Container(
+          //     color: Colors.black54, // semi-transparent background
+          //     child: const Center(
+          //       child: CircularProgressIndicator(color: Colors.white),
+          //     ),
+          //   ),
+          AnimatedOpacity(
+            opacity: _isLoading ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer(
+              ignoring: !_isLoading,
+              child: Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
