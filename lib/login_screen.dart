@@ -94,58 +94,144 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: Stack(
         children: [
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('WELCOME', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 40),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Enter your Email'),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Enter your Password'),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: _checkFields() ? _login : null,
-                    child: const Text('Login'),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _checkFields() ? _register : null,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[600]),
-                    child: const Text('Register'),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_isLoading) const CircularProgressIndicator(),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 10),
-                    Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-                  ],
+          // 🌄 Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF355C7D),
+                  Color(0xFF6C5B7B),
+                  Color(0xFFC06C84),
                 ],
               ),
             ),
           ),
 
-          // if (_isLoading)
-          //   Container(
-          //     color: Colors.black54, // semi-transparent background
-          //     child: const Center(
-          //       child: CircularProgressIndicator(color: Colors.white),
-          //     ),
-          //   ),
+          // 🪵 Main content
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              child: Card(
+                elevation: 10,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Logo or Title
+                      const Icon(Icons.terrain, size: 80, color: Color(0xFF355C7D)),
+                      const SizedBox(height: 16),
+                      Text(
+                        "TrailMate",
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF355C7D),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Email field
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Password field
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Login button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _checkFields() ? _login : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF355C7D),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Register button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: _checkFields() ? _register : null,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(color: Color(0xFF355C7D)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Register',
+                            style: TextStyle(fontSize: 16, color: Color(0xFF355C7D)),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      if (_errorMessage != null)
+                        Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent),
+                          textAlign: TextAlign.center,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 🌫️ Animated loading overlay
           AnimatedOpacity(
             opacity: _isLoading ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 200),
@@ -163,4 +249,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
 }
+
