@@ -3,9 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class TrailService {
-  static const String _apiKey = String.fromEnvironment("MAPS_API_KEY"); // or use method channel if needed
+  // static const String _apiKey = String.fromEnvironment("MAPS_API_KEY"); // or use method channel if needed
+  static const MethodChannel _channel = MethodChannel('app.config');
 
   static Future<List<LatLng>> fetchNearbyTrails(LatLng location) async {
+    final String apiKey = await _channel.invokeMethod<String>('getMapsApiKey') ?? '';
+
     final String url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${location.latitude},${location.longitude}'
