@@ -1,10 +1,10 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 
 }
 
@@ -22,15 +22,8 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.fluttertest.fluttertest"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+    buildFeatures {
+        buildConfig = true
     }
 
     secrets {
@@ -43,6 +36,24 @@ android {
         // checked in version control.
         defaultPropertiesFileName = "local.defaults.properties"
     }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.fluttertest.fluttertest"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        buildConfigField(
+            "String",
+            "MAPS_API_KEY",
+            "\"${project.properties["MAPS_API_KEY"]}\""
+        )
+    }
+
 
     buildTypes {
         release {
