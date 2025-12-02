@@ -19,11 +19,11 @@ class _MapScreenState extends State<MapScreen> {
   bool _locationPermissionGranted = false;
 
   final Set<Marker> _markers = {
-    Marker(
-      markerId: MarkerId('trail_1'),
-      position: LatLng(37.8076, -122.4751),
-      infoWindow: InfoWindow(title: 'Test Trail 1'),
-    ),
+    // Marker(
+    //   markerId: MarkerId('trail_1'),
+    //   position: LatLng(37.8076, -122.4751),
+    //   infoWindow: InfoWindow(title: 'Test Trail 1'),
+    // ),
   };
 
   @override
