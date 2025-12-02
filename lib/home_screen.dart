@@ -5,6 +5,8 @@ import 'login_screen.dart';
 import 'services/config.dart';
 import 'maps_screen.dart';
 import 'favorites_screen.dart';
+import 'trailsearchresults_screen.dart';
+import 'placesearchresult_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +16,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController trailController = TextEditingController();
+  final TextEditingController placeController = TextEditingController();
   String apiKey = "Loading API key...";
 
   @override
@@ -122,6 +126,47 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // ------------------ TRAIL SEARCH ------------------
+            TextField(
+              controller: trailController,
+              decoration: InputDecoration(
+                labelText: "Search by Trail Name",
+                hintText: "e.g. Angels Landing",
+                prefixIcon: Icon(Icons.terrain),
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (query) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TrailSearchResultsScreen(query: query),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            // ------------------ PLACE SEARCH ------------------
+            TextField(
+              controller: placeController,
+              decoration: InputDecoration(
+                labelText: "Search By Location / Park",
+                hintText: "e.g. Yosemite National Park",
+                prefixIcon: Icon(Icons.location_on),
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (query) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PlaceSearchResultsScreen(query: query),
+                  ),
                 );
               },
             ),
