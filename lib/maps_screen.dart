@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+import 'services/trail_service.dart';
+import 'trail_screen.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -75,136 +77,99 @@ class _MapScreenState extends State<MapScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
+        onPressed: _loadNearbyTrails,
         child: const Icon(Icons.place),
-        onPressed: () async {
-          debugPrint("Floating button pressed");
-
-          final controller = await _mapController.future;
-          LatLng fallback = const LatLng(37.8076, -122.4751); // Golden Gate area
-          LatLng? userLatLng;
-
-          if (_locationPermissionGranted) {
-            try {
-              final position = await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high,
-              );
-              userLatLng = LatLng(position.latitude, position.longitude);
-            } catch (e) {
-              debugPrint("Failed to get location, using fallback: $e");
-            }
-          }
-
-          final target = userLatLng ?? fallback;
-
-          await controller.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(target: target, zoom: 14.0),
-            ),
-          );
-
-          debugPrint("Moved camera to: $target");
-        },
+        // onPressed: () async {
+        //   debugPrint("Floating button pressed");
+        //
+        //   final controller = await _mapController.future;
+        //   LatLng fallback = const LatLng(37.8076, -122.4751); // Golden Gate area
+        //   LatLng? userLatLng;
+        //
+        //   if (_locationPermissionGranted) {
+        //     try {
+        //       final position = await Geolocator.getCurrentPosition(
+        //         desiredAccuracy: LocationAccuracy.high,
+        //       );
+        //       userLatLng = LatLng(position.latitude, position.longitude);
+        //     } catch (e) {
+        //       debugPrint("Failed to get location, using fallback: $e");
+        //     }
+        //   }
+        //
+        //   final target = userLatLng ?? fallback;
+        //
+        //   await controller.animateCamera(
+        //     CameraUpdate.newCameraPosition(
+        //       CameraPosition(target: target, zoom: 14.0),
+        //     ),
+        //   );
+        //
+        //   debugPrint("Moved camera to: $target");
+        // },
       ),
     );
   }
+
+  Future<void> _loadNearbyTrails() async {
+    final controller = await _mapController.future;
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    final LatLng userLocation = LatLng(position.latitude, position.longitude);
+
+    debugPrint("Fetching trails near: $userLocation");
+
+    try {
+      final trails = await TrailService.fetchNearbyTrails(userLocation);
+      setState(() {
+        _markers.clear();
+        for (final trail in trails) {
+          _markers.add(
+            Marker(
+              markerId: MarkerId(trail.id),
+              position: trail.latLng,
+              infoWindow: InfoWindow(
+                title: trail.name,
+                onTap: () => _openTrailDetail(trail),
+              ),
+            ),
+          );
+        }
+      });
+      // final List<LatLng> trails = await TrailService.fetchNearbyTrails(userLocation);
+      //
+      // setState(() {
+      //   _markers.clear();
+      //   for (int i = 0; i < trails.length; i++) {
+      //     _markers.add(
+      //       Marker(
+      //         markerId: MarkerId('trail_$i'),
+      //         position: trails[i],
+      //         infoWindow: InfoWindow(title: 'Trail #$i'),
+      //       ),
+      //     );
+      //   }
+      // });
+
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(userLocation, 10),
+      );
+
+      debugPrint("Loaded ${trails.length} trail markers");
+    } catch (e) {
+      debugPrint("Error loading trails: $e");
+    }
+  }
+  void _openTrailDetail(Trail trail) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TrailDetailScreen(trail: trail),
+      ),
+    );
+  }
+
 }
 
 
-
-// import 'package:flutter/material.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'dart:async';
-//
-// class MapScreen extends StatefulWidget {
-//   @override
-//   _MapScreenState createState() => _MapScreenState();
-// }
-//
-// class _MapScreenState extends State<MapScreen> {
-//   final Completer<GoogleMapController> _mapController = Completer();
-//   // Define an initial camera position (latitude/longitude and zoom)
-//   static final CameraPosition _initialCamPos = CameraPosition(
-//     target: LatLng(37.7749, -122.4194),  // e.g. center on San Francisco
-//     zoom: 12.0,
-//   );
-//   // Example secondary camera position (for demo purpose)
-//   static final CameraPosition _targetCamPos = CameraPosition(
-//     target: LatLng(37.8076, -122.4751),  // e.g. Golden Gate Bridge area
-//     zoom: 14.0,
-//   );
-//
-//   // A set of markers to display (using dummy test data for now)
-//   final Set<Marker> _markers = {
-//     Marker(
-//       markerId: MarkerId('trail_1'),
-//       position: LatLng(37.8076, -122.4751),
-//       infoWindow: InfoWindow(title: 'Test Trail 1', snippet: 'San Francisco'),
-//       onTap: () => debugPrint('Marker Trail 1 tapped'),
-//     ),
-//     // You can add more Marker() entries here for additional test points
-//   };
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: GoogleMap(
-//         mapType: MapType.normal,  // Map view type (normal/satellite/terrain)
-//         initialCameraPosition: _initialCamPos,
-//         markers: _markers,        // Add our test markers to the map:contentReference[oaicite:9]{index=9}
-//         onMapCreated: (GoogleMapController controller) {
-//           _mapController.complete(controller);
-//           debugPrint("Google Map has been created");
-//         },
-//         myLocationEnabled: false,       // we'll enable this when permission is granted
-//         myLocationButtonEnabled: false, // custom button instead of default for now
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         child: const Icon(Icons.place),  // an icon (e.g. pin/drop) for the action
-//         onPressed: _onMapButtonPressed,
-//         tooltip: 'Go to test location',
-//       ),
-//     );
-//   }
-//
-//   // Example action for the floating button: animate camera to the target position
-//   Future<void> _onMapButtonPressed() async {
-//     debugPrint("Floating action button pressed");
-//     final controller = await _mapController.future;
-//     await controller.animateCamera(CameraUpdate.newCameraPosition(_targetCamPos));
-//   }
-// }
-//
-//
-// //
-// // class MapScreen extends StatefulWidget {
-// //   const MapScreen({super.key});
-// //
-// //   @override
-// //   State<MapScreen> createState() => _MapScreenState();
-// // }
-// //
-// // class _MapScreenState extends State<MapScreen> {
-// //   late GoogleMapController mapController;
-// //
-// //   final LatLng _center = const LatLng(45.521563, -122.677433);
-// //
-// //   void _onMapCreated(GoogleMapController controller) {
-// //     mapController = controller;
-// //   }
-// //
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Scaffold(
-// //       appBar: AppBar(
-// //         title: const Text('Maps Sample App'),
-// //       ),
-// //       body: GoogleMap(
-// //         onMapCreated: _onMapCreated,
-// //         initialCameraPosition: CameraPosition(
-// //           target: _center,
-// //           zoom: 11.0,
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
