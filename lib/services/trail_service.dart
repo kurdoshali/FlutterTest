@@ -66,7 +66,7 @@ class TrailService {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      debugPrint("PLACES RESPONSE: ${jsonEncode(json)}");
+      debugPrint("NEARBY RESPONSE: ${jsonEncode(json)}");
       final results = json['results'] as List;
 
       return results.map<Trail>((place) {
@@ -90,8 +90,7 @@ class TrailService {
     }
   }
 
-  static Future<Map<String, dynamic>> fetchPlaceDetails(
-      String placeId, String apiKey) async {
+  static Future<Map<String, dynamic>> fetchPlaceDetails(String placeId, String apiKey) async {
     final url =
         'https://maps.googleapis.com/maps/api/place/details/json'
         '?place_id=$placeId'
@@ -107,38 +106,108 @@ class TrailService {
     final json = jsonDecode(response.body);
     return json['result'] ?? {};
   }
+
+  static Future<List<Trail>> searchTrailsByName(String name) async {
+    final String apiKey =
+        await _channel.invokeMethod<String>('getMapsApiKey') ?? '';
+
+    final url =
+        "https://maps.googleapis.com/maps/api/place/textsearch/json"
+        "?query=${Uri.encodeComponent(name)}"
+        "&type=park"
+        "&key=$apiKey";
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode != 200) return [];
+
+    final json = jsonDecode(response.body);
+    print("🔍Search Name Called!!!!!!!!: ${jsonEncode(json)}");
+
+    if (json["status"] != "OK") return [];
+
+    List results = json["results"];
+
+    return results.map<Trail>((place) {
+      final loc = place["geometry"]["location"];
+
+      return Trail(
+        id: place["place_id"],
+        name: place["name"] ?? "Unknown Trail",
+        address: place["formatted_address"] ?? "No address",
+        lat: loc["lat"],
+        lng: loc["lng"],
+        photoReference: (place["photos"] != null && place["photos"].isNotEmpty)
+            ? place["photos"][0]["photo_reference"]
+            : null,
+        rating: place["rating"]?.toDouble(),
+        icon: place["icon"],
+        userRatingsTotal: place["user_ratings_total"],
+      );
+    }).toList();
+  }
+
+  static Future<List<Trail>> searchPlaces(String query) async {
+    final String apiKey =
+        await _channel.invokeMethod<String>('getMapsApiKey') ?? '';
+
+    final url =
+        "https://maps.googleapis.com/maps/api/place/textsearch/json"
+        "?query=${Uri.encodeComponent(query)}"
+        "&key=$apiKey";
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode != 200) return [];
+
+    final json = jsonDecode(response.body);
+    print("🔍 searchPlaces() raw response: ${jsonEncode(json)}");
+
+    if (json["status"] != "OK") return [];
+
+    List results = json["results"];
+
+    return results.map<Trail>((place) {
+      final loc = place["geometry"]["location"];
+
+      return Trail(
+        id: place["place_id"],
+        name: place["name"],
+        address: place["formatted_address"] ?? "",
+        lat: loc["lat"],
+        lng: loc["lng"],
+        photoReference: null, // usually not provided
+        rating: place["rating"]?.toDouble(),
+        icon: place["icon"],
+        userRatingsTotal: place["user_ratings_total"],
+      );
+    }).toList();
+  }
+
+  static Future<List<String>> autocomplete(String input) async {
+    if (input.isEmpty) return [];
+
+    final String apiKey =
+        await _channel.invokeMethod<String>('getMapsApiKey') ?? '';
+
+    final url =
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+        "?input=${Uri.encodeComponent(input)}"
+        "&types=geocode"
+        "&key=$apiKey";
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode != 200) return [];
+
+    final json = jsonDecode(response.body);
+
+    if (json["status"] != "OK") return [];
+
+    List predictions = json["predictions"];
+
+    return predictions.map<String>((p) => p["description"]).toList();
+  }
+
+
 }
-//
-//
-// class TrailService {
-//   // static const String _apiKey = String.fromEnvironment("MAPS_API_KEY"); // or use method channel if needed
-//   static const MethodChannel _channel = MethodChannel('app.config');
-//
-//   static Future<List<LatLng>> fetchNearbyTrails(LatLng location) async {
-//     final String apiKey = await _channel.invokeMethod<String>('getMapsApiKey') ?? '';
-//
-//     final String url =
-//         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-//         '?location=${location.latitude},${location.longitude}'
-//         '&radius=5000'
-//         '&keyword=hiking'
-//         '&type=park'
-//         '&key=$apiKey';
-//
-//     final response = await http.get(Uri.parse(url));
-//
-//     if (response.statusCode == 200) {
-//       final json = jsonDecode(response.body);
-//       debugPrint("PLACES RESPONSE: ${jsonEncode(json)}");
-//       final results = json['results'] as List;
-//
-//       return results.map((place) {
-//         final lat = place['geometry']['location']['lat'];
-//         final lng = place['geometry']['location']['lng'];
-//         return LatLng(lat, lng);
-//       }).toList();
-//     } else {
-//       throw Exception('Failed to fetch places: ${response.statusCode}');
-//     }
-//   }
-// }
