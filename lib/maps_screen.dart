@@ -79,34 +79,7 @@ class _MapScreenState extends State<MapScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _loadNearbyTrails,
         child: const Icon(Icons.place),
-        // onPressed: () async {
-        //   debugPrint("Floating button pressed");
-        //
-        //   final controller = await _mapController.future;
-        //   LatLng fallback = const LatLng(37.8076, -122.4751); // Golden Gate area
-        //   LatLng? userLatLng;
-        //
-        //   if (_locationPermissionGranted) {
-        //     try {
-        //       final position = await Geolocator.getCurrentPosition(
-        //         desiredAccuracy: LocationAccuracy.high,
-        //       );
-        //       userLatLng = LatLng(position.latitude, position.longitude);
-        //     } catch (e) {
-        //       debugPrint("Failed to get location, using fallback: $e");
-        //     }
-        //   }
-        //
-        //   final target = userLatLng ?? fallback;
-        //
-        //   await controller.animateCamera(
-        //     CameraUpdate.newCameraPosition(
-        //       CameraPosition(target: target, zoom: 14.0),
-        //     ),
-        //   );
-        //
-        //   debugPrint("Moved camera to: $target");
-        // },
+
       ),
     );
   }
@@ -137,20 +110,6 @@ class _MapScreenState extends State<MapScreen> {
           );
         }
       });
-      // final List<LatLng> trails = await TrailService.fetchNearbyTrails(userLocation);
-      //
-      // setState(() {
-      //   _markers.clear();
-      //   for (int i = 0; i < trails.length; i++) {
-      //     _markers.add(
-      //       Marker(
-      //         markerId: MarkerId('trail_$i'),
-      //         position: trails[i],
-      //         infoWindow: InfoWindow(title: 'Trail #$i'),
-      //       ),
-      //     );
-      //   }
-      // });
 
       await controller.animateCamera(
         CameraUpdate.newLatLngZoom(userLocation, 10),

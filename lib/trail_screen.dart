@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/trail_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TrailDetailScreen extends StatefulWidget {
   final Trail trail;
@@ -68,6 +70,73 @@ class _TrailDetailScreenState extends State<TrailDetailScreen> {
       isLoading = false;
     });
   }
+
+  Future<void> saveTrailToFavorites() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please log in to save trails")),
+      );
+      return;
+    }
+
+    try {
+      final favoritesRef = FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .collection("favorites");
+
+      // Check if this trail already exists (by place_id)
+      final existingDoc = await favoritesRef.doc(widget.trail.id).get();
+
+      if (existingDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("This trail is already saved")),
+        );
+        return;
+      }
+
+      // Add the trail if it does NOT exist
+      await favoritesRef.doc(widget.trail.id).set(widget.trail.toMap());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Trail saved to favorites!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving trail: $e")),
+      );
+    }
+  }
+
+  // Future<void> saveTrailToFavorites() async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //
+  //   if (user == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Please log in to save trails")),
+  //     );
+  //     return;
+  //   }
+  //
+  //   try {
+  //     final favoritesRef = FirebaseFirestore.instance
+  //         .collection("users")
+  //         .doc(user.uid)
+  //         .collection("favorites");
+  //
+  //     await favoritesRef.add(widget.trail.toMap());
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Trail added to favorites!")),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Error saving trail: $e")),
+  //     );
+  //   }
+  // }
 
   Widget _buildPhotoCarousel() {
     if (photoUrls.isEmpty) {
@@ -222,6 +291,24 @@ class _TrailDetailScreenState extends State<TrailDetailScreen> {
             const Text("No reviews available.")
           else
             ...reviews.map(_buildReviewCard),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[700],
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: saveTrailToFavorites,
+            icon: const Icon(Icons.favorite),
+            label: const Text("Save to Favorites"),
+          ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );

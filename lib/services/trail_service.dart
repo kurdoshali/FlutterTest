@@ -28,6 +28,19 @@ class Trail {
     this.userRatingsTotal,
   });
 
+  Map<String, dynamic> toMap() {
+    return {
+      "id": id,
+      "name": name,
+      "address": address,
+      "lat": lat,
+      "lng": lng,
+      "photoReference": photoReference,
+      "rating": rating,
+      "userRatingsTotal": userRatingsTotal,
+    };
+  }
+
   LatLng get latLng => LatLng(lat, lng);
 
   String? get photoUrl => photoReference != null
@@ -44,7 +57,7 @@ class TrailService {
     final String url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${location.latitude},${location.longitude}'
-        '&radius=5000'
+        '&radius=20000'
         '&keyword=hiking'
         '&type=park'
         '&key=$apiKey';
